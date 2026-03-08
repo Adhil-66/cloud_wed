@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="theme-color" content="#faf6ee"/>
+<title>CloudWed — Coming Soon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,200;0,300;1,200;1,300&family=Montserrat:wght@200;300&display=swap" rel="stylesheet"/>
+<style>
+
+/* ════════════════════════════════════════════════
+   RESET — works IE11+, all modern browsers
+════════════════════════════════════════════════ */
+*, *::before, *::after {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES
+   (IE11 fallback values written inline where needed)
+════════════════════════════════════════════════ */
+:root {
+  --gold:    #b8902a;
+  --gold2:   #d4a83a;
+  --gold3:   #f0cc70;
+  --goldlt:  #f5e4b0;
+  --white:   #fffdf8;
+  --bg:      #faf6ee;
+  --ink:     #2a2015;
+}
+
+/* ════════════════════════════════════════════════
+   BASE
+════════════════════════════════════════════════ */
+html {
+  height: 100%;
+  /* iOS momentum scroll fix */
+  -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+  background: #faf6ee;           /* IE fallback */
+  background: var(--bg);
+  /* Hide system cursor on pointer devices only */
+  cursor: default;
+}
+
+/* Hide cursor only on devices that have a real pointer */
+@media (pointer: fine) {
+  body { cursor: none; }
+}
+
+/* ════════════════════════════════════════════════
+   CUSTOM CURSOR  (hidden on touch devices)
+════════════════════════════════════════════════ */
+#cur {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  display: none; /* hidden by default */
+}
+
+@media (pointer: fine) {
+  #cur { display: block; }
+}
+
+#cDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #b8902a;
+  background: var(--gold);
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+
+#cRing {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(184, 144, 42, .5);
+  -webkit-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  opacity: .55;
+  -webkit-transition: width .4s cubic-bezier(.23, 1, .32, 1),
+                      height .4s cubic-bezier(.23, 1, .32, 1),
+                      opacity .4s ease;
+       -o-transition: width .4s cubic-bezier(.23, 1, .32, 1),
+                      height .4s cubic-bezier(.23, 1, .32, 1),
+                      opacity .4s ease;
+          transition: width .4s cubic-bezier(.23, 1, .32, 1),
+                      height .4s cubic-bezier(.23, 1, .32, 1),
+                      opacity .4s ease;
+}
+
+/* ════════════════════════════════════════════════
+   3D SCENE
+════════════════════════════════════════════════ */
+.scene {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;   /* inset fallback */
+  overflow: hidden;
+
+  /* 3D perspective — webkit prefix for Safari < 9 */
+  -webkit-perspective: 1100px;
+          perspective: 1100px;
+  -webkit-perspective-origin: 50% 50%;
+          perspective-origin: 50% 50%;
+}
+
+.world {
+  position: absolute;
+  top: -20%; right: -20%; bottom: -20%; left: -20%;
+  width: 140%;
+  height: 140%;
+
+  /* preserve-3d — webkit for Safari */
+  -webkit-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ── Background gradient layer ── */
+.layer-bg {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: -webkit-radial-gradient(center, ellipse cover, #fffdf4 0%, #f5ead5 35%, #e8d8b5 65%, #d4c090 100%);
+  background:         radial-gradient(ellipse 75% 65% at 50% 50%, #fffdf4 0%, #f5ead5 35%, #e8d8b5 65%, #d4c090 100%);
+  -webkit-transform: translateZ(-400px) scale(1.55);
+          transform: translateZ(-400px) scale(1.55);
+}
+
+/* ── Light rays ── */
+.layer-rays {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  /* conic-gradient fallback for Firefox < 83 / Safari < 12.1 */
+  background: -webkit-radial-gradient(center, ellipse cover, rgba(255,240,180,.06) 0%, transparent 70%);
+  background:         radial-gradient(ellipse 80% 80% at 50% 40%, rgba(255,240,180,.06) 0%, transparent 70%);
+  -webkit-transform: translateZ(-200px) scale(1.25);
+          transform: translateZ(-200px) scale(1.25);
+  -webkit-animation: rayRotate 35s linear infinite;
+          animation: rayRotate 35s linear infinite;
+}
+
+/* Support conic-gradient where available */
+@supports (background: conic-gradient(from 0deg, red, blue)) {
+  .layer-rays {
+    background: conic-gradient(
+      from 260deg at 50% 40%,
+      transparent 0deg,   rgba(255,240,180,.08) 8deg,
+      transparent 16deg,  rgba(255,240,180,.05) 22deg,
+      transparent 30deg,  rgba(255,240,180,.07) 38deg,
+      transparent 46deg,  rgba(255,240,180,.06) 54deg,
+      transparent 62deg
+    );
+  }
+}
+
+@-webkit-keyframes rayRotate {
+  from { -webkit-transform: translateZ(-200px) scale(1.25) rotate(0deg);   transform: translateZ(-200px) scale(1.25) rotate(0deg); }
+  to   { -webkit-transform: translateZ(-200px) scale(1.25) rotate(360deg); transform: translateZ(-200px) scale(1.25) rotate(360deg); }
+}
+@keyframes rayRotate {
+  from { -webkit-transform: translateZ(-200px) scale(1.25) rotate(0deg);   transform: translateZ(-200px) scale(1.25) rotate(0deg); }
+  to   { -webkit-transform: translateZ(-200px) scale(1.25) rotate(360deg); transform: translateZ(-200px) scale(1.25) rotate(360deg); }
+}
+
+/* ── Centre vignette ── */
+.center-vign {
+  position: absolute;
+  width: 60%; height: 60%;
+  left: 20%; top: 20%;
+  background: -webkit-radial-gradient(center, ellipse cover, rgba(255,253,248,.92) 0%, transparent 75%);
+  background:         radial-gradient(ellipse at center, rgba(255,253,248,.92) 0%, transparent 75%);
+  -webkit-transform: translateZ(8px);
+          transform: translateZ(8px);
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════
+   PHOTO CARDS
+════════════════════════════════════════════════ */
+.photo-card {
+  position: absolute;
+  -webkit-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+  will-change: transform;
+  cursor: none;
+  overflow: hidden;
+  /* box-shadow — widely supported */
+  -webkit-box-shadow:
+    0 4px 20px rgba(184,144,42,.12),
+    0 12px 50px rgba(0,0,0,.08),
+    0 2px 6px rgba(255,255,255,.8);
+          box-shadow:
+    0 4px 20px rgba(184,144,42,.12),
+    0 12px 50px rgba(0,0,0,.08),
+    0 2px 6px rgba(255,255,255,.8);
+}
+
+/* White mount border */
+.photo-card .mount {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  border: 6px solid rgba(255,253,248,.9);
+  pointer-events: none;
+  z-index: 25;
+  -webkit-box-shadow: inset 0 0 0 1px rgba(184,144,42,.2);
+          box-shadow: inset 0 0 0 1px rgba(184,144,42,.2);
+}
+
+/* Gold frame inset */
+.photo-card .gold-frame {
+  position: absolute;
+  top: 10px; right: 10px; bottom: 10px; left: 10px;
+  border: 1px solid rgba(184,144,42,.0);
+  pointer-events: none;
+  z-index: 26;
+  -webkit-transition: border-color .5s ease, -webkit-box-shadow .5s ease;
+       -o-transition: border-color .5s ease,         box-shadow .5s ease;
+          transition: border-color .5s ease,         box-shadow .5s ease;
+}
+
+.photo-card:hover .gold-frame {
+  border-color: rgba(184,144,42,.5);
+  -webkit-box-shadow: 0 0 20px rgba(184,144,42,.15), inset 0 0 20px rgba(184,144,42,.06);
+          box-shadow: 0 0 20px rgba(184,144,42,.15), inset 0 0 20px rgba(184,144,42,.06);
+}
+
+/* Image */
+.photo-card img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  display: block;
+  /* filter — webkit prefix for Safari < 9.1 */
+  -webkit-filter: brightness(.88) contrast(1.05) saturate(.85);
+          filter: brightness(.88) contrast(1.05) saturate(.85);
+  -webkit-transform: scale(1.06);
+      -ms-transform: scale(1.06);
+          transform: scale(1.06);
+  -webkit-transition: -webkit-transform .8s ease, -webkit-filter .6s ease;
+       -o-transition:         transform .8s ease,         filter .6s ease;
+          transition:         transform .8s ease, -webkit-filter .6s ease, filter .6s ease;
+}
+
+.photo-card:hover img {
+  -webkit-transform: scale(1.01);
+      -ms-transform: scale(1.01);
+          transform: scale(1.01);
+  -webkit-filter: brightness(.96) contrast(1.06) saturate(.95);
+          filter: brightness(.96) contrast(1.06) saturate(.95);
+}
+
+/* Bottom fade */
+.photo-card .fade {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 45%;
+  background: -webkit-linear-gradient(bottom, rgba(255,253,248,.7) 0%, transparent 100%);
+  background:    -moz-linear-gradient(bottom, rgba(255,253,248,.7) 0%, transparent 100%);
+  background:      -o-linear-gradient(bottom, rgba(255,253,248,.7) 0%, transparent 100%);
+  background:         linear-gradient(to top,  rgba(255,253,248,.7) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Label */
+.photo-card .clbl {
+  position: absolute;
+  bottom: .75rem; left: 1rem;
+  z-index: 30;
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: .45rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(184,144,42,.7);
+  opacity: 0;
+  -webkit-transition: opacity .4s ease;
+       -o-transition: opacity .4s ease;
+          transition: opacity .4s ease;
+}
+.photo-card:hover .clbl { opacity: 1; }
+
+/* ════════════════════════════════════════════════
+   GLOW LAYER
+════════════════════════════════════════════════ */
+.layer-glow {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  -webkit-transform: translateZ(15px);
+          transform: translateZ(15px);
+  background: -webkit-radial-gradient(center, ellipse cover, rgba(255,240,180,.35) 0%, transparent 68%);
+  background:         radial-gradient(ellipse 40% 36% at 50% 50%, rgba(255,240,180,.35) 0%, transparent 68%);
+  -webkit-animation: pulse 7s ease-in-out infinite;
+          animation: pulse 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@-webkit-keyframes pulse {
+  0%, 100% { opacity: .5; }
+  50%       { opacity: 1;  }
+}
+@keyframes pulse {
+  0%, 100% { opacity: .5; }
+  50%       { opacity: 1;  }
+}
+
+/* ════════════════════════════════════════════════
+   FILM GRAIN
+════════════════════════════════════════════════ */
+.grain {
+  position: fixed;
+  top: -60%; right: -60%; bottom: -60%; left: -60%;
+  width: 220%; height: 220%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: .25;
+  pointer-events: none;
+  z-index: 80;
+  -webkit-animation: grn 8s steps(10) infinite;
+          animation: grn 8s steps(10) infinite;
+}
+
+@-webkit-keyframes grn {
+  0%,100%{ -webkit-transform: translate(0,0);    transform: translate(0,0); }
+  10%    { -webkit-transform: translate(-2%,-3%); transform: translate(-2%,-3%); }
+  20%    { -webkit-transform: translate(3%,2%);   transform: translate(3%,2%); }
+  30%    { -webkit-transform: translate(-1%,3%);  transform: translate(-1%,3%); }
+  40%    { -webkit-transform: translate(3%,-2%);  transform: translate(3%,-2%); }
+  50%    { -webkit-transform: translate(-3%,2%);  transform: translate(-3%,2%); }
+  60%    { -webkit-transform: translate(2%,-3%);  transform: translate(2%,-3%); }
+  70%    { -webkit-transform: translate(-3%,2%);  transform: translate(-3%,2%); }
+  80%    { -webkit-transform: translate(2%,-1%);  transform: translate(2%,-1%); }
+  90%    { -webkit-transform: translate(-2%,3%);  transform: translate(-2%,3%); }
+}
+@keyframes grn {
+  0%,100%{ transform: translate(0,0); }    10%{ transform: translate(-2%,-3%); }
+  20%    { transform: translate(3%,2%); }  30%{ transform: translate(-1%,3%); }
+  40%    { transform: translate(3%,-2%); } 50%{ transform: translate(-3%,2%); }
+  60%    { transform: translate(2%,-3%); } 70%{ transform: translate(-3%,2%); }
+  80%    { transform: translate(2%,-1%); } 90%{ transform: translate(-2%,3%); }
+}
+
+/* ════════════════════════════════════════════════
+   DECORATIVE CORNER FRAME
+════════════════════════════════════════════════ */
+.frame {
+  position: fixed;
+  /* clamp() fallback: use fixed value, then override with clamp */
+  top: 1.8rem; right: 1.8rem; bottom: 1.8rem; left: 1.8rem;
+  top:    clamp(1rem, 2.4vw, 2.2rem);
+  right:  clamp(1rem, 2.4vw, 2.2rem);
+  bottom: clamp(1rem, 2.4vw, 2.2rem);
+  left:   clamp(1rem, 2.4vw, 2.2rem);
+  z-index: 90;
+  border: 1px solid rgba(184,144,42,.2);
+  pointer-events: none;
+}
+.frame::before, .frame::after,
+.frame .fc2,    .frame .fc3 {
+  content: '';
+  position: absolute;
+  border-color: #b8902a;
+  border-color: var(--gold);
+  border-style: solid;
+  /* fallback size */
+  width: 26px; height: 26px;
+  width:  clamp(16px, 3vw, 34px);
+  height: clamp(16px, 3vw, 34px);
+}
+.frame::before { top:-1px; left:-1px;   border-width: 1.5px 0 0 1.5px; }
+.frame::after  { bottom:-1px; right:-1px; border-width: 0 1.5px 1.5px 0; }
+.frame .fc2    { top:-1px; right:-1px;  border-width: 1.5px 1.5px 0 0; }
+.frame .fc3    { bottom:-1px; left:-1px; border-width: 0 0 1.5px 1.5px; }
+
+/* ════════════════════════════════════════════════
+   TOP BADGE
+════════════════════════════════════════════════ */
+.badge {
+  position: fixed;
+  top: 1.8rem;
+  top: clamp(1.6rem, 3vw, 2.5rem);
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+      -ms-transform: translateX(-50%);
+          transform: translateX(-50%);
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: .58rem;
+  font-size: clamp(.46rem, .7vw, .6rem);
+  letter-spacing: .46em;
+  text-transform: uppercase;
+  color: rgba(184,144,42,.55);
+  white-space: nowrap;
+  z-index: 100;
+  opacity: 0;
+  -webkit-animation: fadeUp .8s .5s forwards ease-out;
+          animation: fadeUp .8s .5s forwards ease-out;
+}
+
+/* ════════════════════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════════════════════ */
+main {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 70;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  text-align: center;
+  /* gap fallback using padding on children */
+  padding: 5rem 3rem;
+  padding: clamp(4rem, 10vh, 7rem) clamp(2rem, 6vw, 5rem);
+  pointer-events: none;
+}
+
+/* Spacing between main children via margin instead of gap for IE compat */
+main > * + * {
+  margin-top: 1.6rem;
+  margin-top: clamp(1.2rem, 2.5vh, 2.2rem);
+}
+
+/* ── Eyebrow ── */
+.eyebrow {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  opacity: 0;
+  -webkit-animation: fadeUp .9s .6s forwards ease-out;
+          animation: fadeUp .9s .6s forwards ease-out;
+}
+.eyebrow::before, .eyebrow::after {
+  content: '';
+  width: 40px;
+  width: clamp(25px, 4vw, 52px);
+  height: 1px;
+  background: -webkit-linear-gradient(left, transparent, rgba(184,144,42,.45));
+  background:    -moz-linear-gradient(left, transparent, rgba(184,144,42,.45));
+  background:      -o-linear-gradient(left, transparent, rgba(184,144,42,.45));
+  background:         linear-gradient(to right, transparent, rgba(184,144,42,.45));
+}
+.eyebrow::after { -webkit-transform: scaleX(-1); -ms-transform: scaleX(-1); transform: scaleX(-1); }
+.eyebrow span {
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: .56rem;
+  font-size: clamp(.44rem, .66vw, .58rem);
+  letter-spacing: .42em;
+  text-transform: uppercase;
+  color: #b8902a;
+  color: var(--gold);
+  margin: 0 .8rem;
+}
+
+/* ── Title ── */
+.title {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-weight: 200;
+  line-height: .87;
+}
+.title .line {
+  overflow: hidden;
+  display: block;
+}
+.title .wi {
+  display: inline-block;
+  font-size: 10rem;
+  font-size: clamp(4.5rem, 13vw, 11.5rem);
+  color: #2a2015;
+  color: var(--ink);
+  -webkit-transform: translateY(115%);
+      -ms-transform: translateY(115%);
+          transform: translateY(115%);
+  opacity: 0;
+  -webkit-animation: slideUp 1.05s ease-out forwards;
+          animation: slideUp 1.05s ease-out forwards;
+}
+.title .wi:first-child   { -webkit-animation-delay: .7s;  animation-delay: .7s; }
+.title .wi.it {
+  font-style: italic;
+  color: #b8902a;
+  color: var(--gold);
+  font-size: 11rem;
+  font-size: clamp(5rem, 14vw, 12.5rem);
+  -webkit-animation-delay: .92s;
+          animation-delay: .92s;
+}
+
+/* ── Ornament ── */
+.ornament {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  opacity: 0;
+  -webkit-animation: fadeIn 1s 1.2s forwards;
+          animation: fadeIn 1s 1.2s forwards;
+}
+.ornament > * + * { margin-left: .9rem; }
+.ol {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  max-width: 62px;
+  height: 1px;
+  background: -webkit-linear-gradient(left, transparent, #b8902a);
+  background:    -moz-linear-gradient(left, transparent, #b8902a);
+  background:      -o-linear-gradient(left, transparent, #b8902a);
+  background:         linear-gradient(to right, transparent, #b8902a);
+  background:         linear-gradient(to right, transparent, var(--gold));
+}
+.ol.r {
+  -webkit-transform: scaleX(-1);
+      -ms-transform: scaleX(-1);
+          transform: scaleX(-1);
+}
+.od {
+  width: 7px; height: 7px;
+  background: #b8902a;
+  background: var(--gold);
+  -webkit-transform: rotate(45deg);
+      -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+}
+.ods {
+  width: 4px; height: 4px;
+  background: rgba(184,144,42,.4);
+  -webkit-transform: rotate(45deg);
+      -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+}
+
+/* ── Subtitle ── */
+.subtitle {
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: .7rem;
+  font-size: clamp(.56rem, .95vw, .74rem);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: rgba(42,32,21,.42);
+  line-height: 2.3;
+  max-width: 36ch;
+  opacity: 0;
+  -webkit-animation: fadeUp .9s 1.25s forwards ease-out;
+          animation: fadeUp .9s 1.25s forwards ease-out;
+}
+
+/* ── Coming Soon text ── */
+.cs {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-weight: 200;
+  font-style: italic;
+  font-size: 1.4rem;
+  font-size: clamp(.9rem, 1.9vw, 1.6rem);
+  color: rgba(184,144,42,.65);
+  letter-spacing: .2em;
+  opacity: 0;
+  -webkit-animation: fadeUp .9s 1.45s forwards ease-out;
+          animation: fadeUp .9s 1.45s forwards ease-out;
+}
+
+/* ════════════════════════════════════════════════
+   STATUS BAR
+════════════════════════════════════════════════ */
+.status {
+  position: fixed;
+  bottom: 1.8rem;
+  bottom: clamp(1.6rem, 2.8vw, 2.4rem);
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+      -ms-transform: translateX(-50%);
+          transform: translateX(-50%);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  opacity: 0;
+  -webkit-animation: fadeIn 1s 1.7s forwards;
+          animation: fadeIn 1s 1.7s forwards;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: all;
+}
+.status > * + * { margin-left: 1.8rem; }
+
+.status a, .status span {
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  font-size: .52rem;
+  font-size: clamp(.42rem, .6vw, .55rem);
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(184,144,42,.45);
+  text-decoration: none;
+  -webkit-transition: color .3s ease;
+       -o-transition: color .3s ease;
+          transition: color .3s ease;
+}
+.status a:hover { color: #b8902a; color: var(--gold); }
+.sdot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(184,144,42,.2);
+}
+
+/* ════════════════════════════════════════════════
+   FLOATING PETAL PARTICLES
+════════════════════════════════════════════════ */
+.ptcl {
+  position: fixed;
+  pointer-events: none;
+  z-index: 60;
+  -webkit-animation: drift linear infinite;
+          animation: drift linear infinite;
+  opacity: 0;
+}
+
+@-webkit-keyframes drift {
+  0%   { -webkit-transform: translateY(0) rotate(0deg) scale(1);    transform: translateY(0) rotate(0deg) scale(1);    opacity: 0; }
+  5%   {                                                                                                                opacity: 1; }
+  90%  {                                                                                                                opacity: .5; }
+  100% { -webkit-transform: translateY(-100vh) rotate(540deg) scale(.5); transform: translateY(-100vh) rotate(540deg) scale(.5); opacity: 0; }
+}
+@keyframes drift {
+  0%   { transform: translateY(0) rotate(0deg) scale(1);       opacity: 0; }
+  5%   {                                                        opacity: 1; }
+  90%  {                                                        opacity: .5; }
+  100% { transform: translateY(-100vh) rotate(540deg) scale(.5); opacity: 0; }
+}
+
+/* ════════════════════════════════════════════════
+   SHARED KEYFRAMES
+════════════════════════════════════════════════ */
+@-webkit-keyframes slideUp {
+  from { -webkit-transform: translateY(115%); transform: translateY(115%); opacity: 0; }
+  to   { -webkit-transform: translateY(0);    transform: translateY(0);    opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(115%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@-webkit-keyframes fadeUp {
+  from { opacity: 0; -webkit-transform: translateY(18px); transform: translateY(18px); }
+  to   { opacity: 1; -webkit-transform: translateY(0);    transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@-webkit-keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE — Mobile
+════════════════════════════════════════════════ */
+@media screen and (max-width: 600px) {
+  .status > * + * { margin-left: .9rem; }
+  .ol { max-width: 30px; }
+  .eyebrow span { margin: 0 .5rem; }
+}
+
+/* iOS Safari 100vh fix */
+@supports (-webkit-touch-callout: none) {
+  .scene, main {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    -webkit-animation-duration: .01ms !important;
+            animation-duration: .01ms !important;
+    -webkit-animation-iteration-count: 1 !important;
+            animation-iteration-count: 1 !important;
+    -webkit-transition-duration: .01ms !important;
+         -o-transition-duration: .01ms !important;
+            transition-duration: .01ms !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Custom cursor (only shown for pointer:fine devices via CSS) -->
+<div id="cur"><div id="cDot"></div><div id="cRing"></div></div>
+
+<!-- 3D Scene -->
+<div class="scene">
+  <div class="world" id="world">
+    <div class="layer-bg"></div>
+    <div class="layer-rays"></div>
+    <canvas id="bokehCanvas"></canvas>
+    <!-- cards injected by JS -->
+    <div class="center-vign"></div>
+    <div class="layer-glow"></div>
+  </div>
+</div>
+
+<!-- Overlays -->
+<div class="grain"></div>
+<div class="frame"><span class="fc2"></span><span class="fc3"></span></div>
+<div class="badge">Fine Art Wedding Photography</div>
+
+<!-- Content -->
+<main>
+  <div class="eyebrow"><span>Kerala &nbsp;&middot;&nbsp; South India &nbsp;&middot;&nbsp; Est. 2025</span></div>
+  <h1 class="title">
+    <span class="line"><span class="wi">Cloud</span></span>
+    <span class="line"><span class="wi it">Wed</span></span>
+  </h1>
+  <div class="ornament">
+    <div class="ol"></div><div class="ods"></div><div class="od"></div><div class="ods"></div><div class="ol r"></div>
+  </div>
+  <p class="subtitle">Every love story deserves to live forever.<br/>Something beautiful is on its way.</p>
+  <p class="cs">&#8212; Coming Soon &#8212;</p>
+</main>
+
+<!-- Status bar -->
+<div class="status">
+  <a href="#">Instagram</a><div class="sdot"></div>
+  <a href="#">Pinterest</a><div class="sdot"></div>
+  <a href="#">WhatsApp</a><div class="sdot"></div>
+  <span>cloudwed@gmail.com</span>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   FEATURE DETECT helpers
+══════════════════════════════════ */
+var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+var supportsRequestAnimationFrame = typeof requestAnimationFrame === 'function';
+var raf = supportsRequestAnimationFrame
+  ? requestAnimationFrame.bind(window)
+  : function(cb){ setTimeout(cb, 16); };
+
+/* ══════════════════════════════════
+   CUSTOM CURSOR
+══════════════════════════════════ */
+var curDot  = document.getElementById('cDot');
+var curRing = document.getElementById('cRing');
+var mx = 0, my = 0, crx = 0, cry = 0;
+
+document.addEventListener('mousemove', function(e) { mx = e.clientX; my = e.clientY; });
+
+function curTick() {
+  crx += (mx - crx) * .13;
+  cry += (my - cry) * .13;
+  var dtf = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
+  var rtf = 'translate(' + crx + 'px,' + cry + 'px) translate(-50%,-50%)';
+  curDot.style.webkitTransform  = dtf;
+  curDot.style.msTransform      = dtf;
+  curDot.style.transform        = dtf;
+  curRing.style.webkitTransform = rtf;
+  curRing.style.msTransform     = rtf;
+  curRing.style.transform       = rtf;
+  raf(curTick);
+}
+raf(curTick);
+
+var links = document.querySelectorAll('a');
+for (var li = 0; li < links.length; li++) {
+  (function(el) {
+    el.addEventListener('mouseenter', function() {
+      curRing.style.width = '56px'; curRing.style.height = '56px'; curRing.style.opacity = '.2';
+    });
+    el.addEventListener('mouseleave', function() {
+      curRing.style.width = '36px'; curRing.style.height = '36px'; curRing.style.opacity = '.55';
+    });
+  })(links[li]);
+}
+
+/* ══════════════════════════════════
+   WEDDING PHOTOS
+══════════════════════════════════ */
+var photos = [
+  { url:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=900&q=85&auto=format&fit=crop', label:'Golden Hour' },
+  { url:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&q=85&auto=format&fit=crop', label:'Ceremony' },
+  { url:'https://images.unsplash.com/photo-1525258801666-53cf9e2a3fc1?w=900&q=85&auto=format&fit=crop', label:'Bridal Portrait' },
+  { url:'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=85&auto=format&fit=crop', label:'Details' },
+  { url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=900&q=85&auto=format&fit=crop', label:'Together' },
+  { url:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=900&q=85&auto=format&fit=crop', label:'First Look' },
+  { url:'https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=900&q=85&auto=format&fit=crop', label:'Celebration' },
+  { url:'https://images.unsplash.com/photo-1606216840207-04fc40d24c25?w=900&q=85&auto=format&fit=crop', label:'Twilight' },
+  { url:'https://images.unsplash.com/photo-1478146059778-26028b07395a?w=900&q=85&auto=format&fit=crop', label:'Romance' },
+];
+
+var W = window.innerWidth, H = window.innerHeight;
+var layout = [
+  { l:-5,  t:3,   w:28, h:44, z:-280, ry:20,  rx:-4, rz:-3,   d:0.85 },
+  { l:77,  t:1,   w:26, h:40, z:-260, ry:-18, rx:-3, rz:3,    d:0.9  },
+  { l:35,  t:-4,  w:22, h:36, z:-210, ry:6,   rx:8,  rz:-2,   d:0.88 },
+  { l:-9,  t:40,  w:25, h:48, z:-155, ry:24,  rx:2,  rz:2,    d:1.0  },
+  { l:79,  t:36,  w:23, h:46, z:-145, ry:-22, rx:3,  rz:-2,   d:1.05 },
+  { l:4,   t:63,  w:21, h:38, z:-95,  ry:16,  rx:-5, rz:3.5,  d:1.1  },
+  { l:75,  t:61,  w:22, h:38, z:-85,  ry:-14, rx:-4, rz:-3.2, d:1.15 },
+  { l:-13, t:16,  w:32, h:58, z:-48,  ry:30,  rx:2,  rz:1,    d:1.2  },
+  { l:82,  t:18,  w:30, h:54, z:-48,  ry:-28, rx:2,  rz:-1,   d:1.25 },
+];
+
+var world       = document.getElementById('world');
+var bokehCanvas = document.getElementById('bokehCanvas');
+
+/* inject card-reveal keyframe */
+var ks = document.createElement('style');
+ks.textContent = '@-webkit-keyframes crdIn{from{opacity:0;-webkit-filter:blur(6px) brightness(1.3);filter:blur(6px) brightness(1.3)}to{opacity:1;-webkit-filter:blur(0) brightness(1);filter:blur(0) brightness(1)}}@keyframes crdIn{from{opacity:0;-webkit-filter:blur(6px) brightness(1.3);filter:blur(6px) brightness(1.3)}to{opacity:1;-webkit-filter:blur(0) brightness(1);filter:blur(0) brightness(1)}}';
+document.head.appendChild(ks);
+
+for (var ci = 0; ci < layout.length; ci++) {
+  var cfg = layout[ci];
+  var ph  = photos[ci];
+  var card = document.createElement('div');
+  card.className = 'photo-card';
+
+  var cw = cfg.w/100*W, ch = cfg.h/100*H;
+  var cl = cfg.l/100*W, ct2 = cfg.t/100*H;
+
+  var tf = 'translateZ(' + cfg.z + 'px) rotateY(' + cfg.ry + 'deg) rotateX(' + cfg.rx + 'deg) rotateZ(' + cfg.rz + 'deg)';
+  card.style.left   = cl  + 'px';
+  card.style.top    = ct2 + 'px';
+  card.style.width  = cw  + 'px';
+  card.style.height = ch  + 'px';
+  card.style.webkitTransform = tf;
+  card.style.msTransform     = tf;
+  card.style.transform       = tf;
+  card.style.opacity = '0';
+  card.style.webkitAnimation = 'crdIn .9s ' + cfg.d + 's forwards ease-out';
+  card.style.animation       = 'crdIn .9s ' + cfg.d + 's forwards ease-out';
+
+  var img = document.createElement('img');
+  img.src     = ph.url;
+  img.alt     = ph.label;
+  img.loading = 'lazy';
+  /* object-fit polyfill-friendly: set width/height via CSS class */
+
+  var mount      = document.createElement('div'); mount.className = 'mount';
+  var goldFrame  = document.createElement('div'); goldFrame.className = 'gold-frame';
+  var fade       = document.createElement('div'); fade.className = 'fade';
+  var lbl        = document.createElement('span'); lbl.className = 'clbl'; lbl.textContent = ph.label;
+
+  card.appendChild(img);
+  card.appendChild(mount);
+  card.appendChild(goldFrame);
+  card.appendChild(fade);
+  card.appendChild(lbl);
+
+  world.insertBefore(card, bokehCanvas);
+}
+
+/* ══════════════════════════════════
+   BOKEH CANVAS
+══════════════════════════════════ */
+bokehCanvas.style.position  = 'absolute';
+bokehCanvas.style.top       = '0';
+bokehCanvas.style.right     = '0';
+bokehCanvas.style.bottom    = '0';
+bokehCanvas.style.left      = '0';
+bokehCanvas.style.pointerEvents = 'none';
+
+var bokehTf = 'translateZ(-90px) scale(1.12)';
+bokehCanvas.style.webkitTransform = bokehTf;
+bokehCanvas.style.msTransform     = bokehTf;
+bokehCanvas.style.transform       = bokehTf;
+
+bokehCanvas.width  = world.offsetWidth  || 2000;
+bokehCanvas.height = world.offsetHeight || 1500;
+
+var bCtx = bokehCanvas.getContext('2d');
+var bokehDots = [];
+for (var bi = 0; bi < 65; bi++) {
+  bokehDots.push({
+    x: Math.random(), y: Math.random(),
+    r: Math.random()*5+1.5,
+    a: Math.random()*.14+.04,
+    sp: Math.random()*.00003+.00001,
+    p: Math.random()*Math.PI*2,
+    d: (Math.random()-.5)*.00008,
+    gold: Math.random()>.4,
+  });
+}
+
+function drawBokeh() {
+  bCtx.clearRect(0, 0, bokehCanvas.width, bokehCanvas.height);
+  for (var i = 0; i < bokehDots.length; i++) {
+    var b = bokehDots[i];
+    b.p += b.sp * 60; b.x += b.d;
+    if (b.x < -.05) b.x = 1.05;
+    if (b.x >  1.05) b.x = -.05;
+    var px = b.x * bokehCanvas.width;
+    var py = (b.y + Math.sin(b.p) * .025) * bokehCanvas.height;
+    var c  = b.gold ? 'rgba(212,168,58,' + b.a + ')' : 'rgba(255,253,240,' + (b.a*.7) + ')';
+    var g  = bCtx.createRadialGradient(px,py,0, px,py,b.r*9);
+    g.addColorStop(0, c);
+    g.addColorStop(1, 'rgba(255,250,230,0)');
+    bCtx.beginPath();
+    bCtx.arc(px, py, b.r*9, 0, Math.PI*2);
+    bCtx.fillStyle = g;
+    bCtx.fill();
+  }
+  raf(drawBokeh);
+}
+raf(drawBokeh);
+
+/* ══════════════════════════════════
+   3D CAMERA
+══════════════════════════════════ */
+var mouseX = 0, mouseY = 0;
+
+document.addEventListener('mousemove', function(e) {
+  mouseX = (e.clientX / window.innerWidth  - .5) * 2;
+  mouseY = (e.clientY / window.innerHeight - .5) * 2;
+});
+
+/* Touch panning */
+document.addEventListener('touchmove', function(e) {
+  var t = e.touches[0];
+  mouseX = (t.clientX / window.innerWidth  - .5) * 2;
+  mouseY = (t.clientY / window.innerHeight - .5) * 2;
+}, { passive: true });
+
+var sm = { rx:0, ry:0, tx:0, ty:0, z:0, rz:0 };
+var LF = 0.024;
+
+function cameraFrame(ts) {
+  var s = 0.00021;
+  var aRX = Math.sin(ts*s*.55)*3.2,   aRY = Math.sin(ts*s*.9)*4.8;
+  var aTX = Math.sin(ts*s*.7)*15,     aTY = Math.sin(ts*s*.45)*9;
+  var aZ  = Math.sin(ts*s*.35)*18,    aRZ = Math.sin(ts*s*.65)*.35;
+
+  sm.rx += (mouseY*-9 + aRX - sm.rx) * LF;
+  sm.ry += (mouseX*11 + aRY - sm.ry) * LF;
+  sm.tx += (mouseX*-12+ aTX - sm.tx) * LF;
+  sm.ty += (mouseY*-8 + aTY - sm.ty) * LF;
+  sm.z  += (aZ - sm.z)  * LF;
+  sm.rz += (aRZ- sm.rz) * LF;
+
+  var tf = 'rotateX(' + sm.rx + 'deg) rotateY(' + sm.ry + 'deg) rotateZ(' + sm.rz + 'deg) translate3d(' + sm.tx + 'px,' + sm.ty + 'px,' + sm.z + 'px)';
+  world.style.webkitTransform = tf;
+  world.style.msTransform     = tf;
+  world.style.transform       = tf;
+
+  raf(cameraFrame);
+}
+raf(cameraFrame);
+
+/* ══════════════════════════════════
+   FLOATING PARTICLES
+══════════════════════════════════ */
+var pColors = [
+  'rgba(212,168,58,.6)',
+  'rgba(255,253,240,.5)',
+  'rgba(240,204,112,.5)',
+  'rgba(245,228,176,.4)'
+];
+
+for (var pi = 0; pi < 22; pi++) {
+  var p = document.createElement('div');
+  p.className = 'ptcl';
+  var ps = Math.random()*5+2;
+  var pr = Math.random() > .5 ? '50% 0 50% 0' : '40% 60% 40% 60%';
+  p.style.width          = ps + 'px';
+  p.style.height         = (ps*1.6) + 'px';
+  p.style.borderRadius   = pr;
+  p.style.left           = (Math.random()*100) + 'vw';
+  p.style.bottom         = (-10 - Math.random()*15) + 'px';
+  p.style.background     = pColors[Math.floor(Math.random()*pColors.length)];
+  var pdur = (Math.random()*18+13) + 's';
+  var pdel = (Math.random()*22) + 's';
+  p.style.webkitAnimationDuration = pdur;
+  p.style.animationDuration       = pdur;
+  p.style.webkitAnimationDelay    = pdel;
+  p.style.animationDelay          = pdel;
+  document.body.appendChild(p);
+}
+</script>
+</body>
+</html>
